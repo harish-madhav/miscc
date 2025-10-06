@@ -505,3 +505,76 @@ cat /home/ubuntu/file.txt
 op should be "Sample file"
 
 --------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+WORKINGGGGG
+
+#http file transfer
+sudo ufw disable
+python3 -m http.server 8080
+
+#shared folder
+sudo apt install build-essential dkms linux-headers-$(uname -r)
+sudo usermod -aG vboxsf $USER
+sudo reboot
+ls /media/sf_SharedFolder
+
+#ftp
+sudo apt install vsftpd
+sudo nano /etc/vsftpd.conf
+
+listen=YES
+write_enable=YES
+pasv_enable=YES
+pasv_min_port=40000
+pasv_max_port=40100 
+
+chroot_local_user = YES
+listen_ipv6 = NO
+
+sudo adduser ftpuser
+sudo chmod a-w /home/ftpuser
+sudo mkdir /home/ftpuser/uploads
+sudo chown ftpuser:ftpuser /home/ftpuser/uploads
+sudo ufw disable
+
+sudo systemctl daemon-reload
+sudo systemctl enable vsftpd
+sudo systemctl status vsftpd
+
+login to ftpuser & create file in "uploads" directory
+
+vm2: ftp <ip> in other vm
+vm2: create another file & upload it to ftpserver
+
+#nfs
+sudo ufw disable
+server vm: sudo apt install nfs-kernel-server
+client vm: sudo apt install nfs-common
+
+server vm: sudo mkdir -p /mnt/sharedfolder
+sudo chmod 777 /mnt/sharedfolder
+sudo nano /etc/exports
+/mnt/sharedfolder 192.168.56.0/24(rw,sync,no_subtree_check)
+
+sudo exportfs -a
+sudo systemctl restart nfs-kernel-server
+
+client vm:
+sudo mkdir -p /mnt/nfsshare
+sudo mount <server ip>:/mnt/sharedfolder /mnt/nfsshare
+
+create files in /mnt/nfsshare and check it in server vm
+
+#ssh
+both vm:
+sudo apt install openssh-server -y
+sudo ufw disable
+
+ssh <username>@<ip>
+
+create file in vm2 & check it in vm1
