@@ -145,6 +145,9 @@ Reducing: qemu-img resize --shrink disk.qcow2 NEW_SIZE
 
 Hyper-V - VM
 
+download ubuntu.iso and keep
+
+server manager
 Add roles and features
 HyperV
 Virt switch - ethernet
@@ -159,15 +162,12 @@ generation2
 cpu, mem
 connection - ethernet - virt switch
 Create virt hard disk
-install os from bootable file - download ubuntu.iso and keep
+install os from bootable file
 
 powershell
 start-vm -name VM_NAME
-GET-VM | where {$_.State -eq 'Running'} | Stop-VM
-New-VM -Name "MyVM" -MemoryStartupBytes 2GB -NewVHDPath "C:\MyVM.vhdx" -NewVHDSizeBytes 60GB -Path "C:\VMs"
+GET-VM | where {$_.State -eq 'Running'}
 
-Connect-VMNetworkAdapter -VMName "MyVM" -SwitchName "Intel(R) Ethernet Connection (2) I219-LM - Virtual Switch"
-Set-VMDvdDrive -VMName "MyVM" -Path "C:\ubuntu-18.04-desktop-amd64.iso"
 Start-VM -Name "MyVM"
 Stop-VM -Name "MyVM"
 
@@ -237,12 +237,6 @@ mkfs.ext4 /dev/demo-vg/demo-lv
 mkdir /mnt/lvm-demo
 mount /dev/demo-vg/demo-lv /mnt/lvm-demo
 
-
-lvresize --size +12G demo-vg/demo-lv ( Your size to be extended)
-Check current disk usage: 
-df -h
-Resize file system: 
-resize2fs /dev/mapper/ubuntu-vg-ubuntu-lv
 
 df -h
 
@@ -342,53 +336,6 @@ Select a network, usually called external.
 Select a keypair to access your VM via SSH.
 Click “Launch Instance"
 
----------------------------------------------------------------------------------------
-
-NFS
-
-2 VMs
-Both network -> Bridged Adapter
-ping each other
-
-server VM:
-sudo apt update
-sudo apt install nfs-kernel-server
-
-sudo mkdir -p /srv/nfs/shared
-sudo chown nobody:nogroup /srv/nfs/shared
-sudo chmod 777 /srv/nfs/shared
-
-sudo nano /etc/exports
-
-add line (change your server vm ip): /srv/nfs/shared 10.236.177.97(rw,sync,no_subtree_check)
-
-sudo systemctl restart nfs-kernel-server
-
-sudo exportfs -a
-
-sudo ufw allow from 10.236.177.97 to any port nfs
-
------
-
-client VM:
-sudo apt update
-sudo apt install nfs-common
-
-sudo mkdir -p /mnt/nfs/shared
-
-use client vm ip
-
-sudo mount 10.236.177.163:/srv/nfs/shared /mnt/nfs/shared 
-
-echo "Hello from client" | sudo tee /mnt/nfs/shared/test.txt
-
-
-go to sever vm and check:
-cat /srv/nfs/shared/test.txt
-
-output should be "Hello from client"
-
-
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -463,52 +410,8 @@ cat newfile.txt
 
 op should be "Hello from FTP client"
 
----------------------------------------------------------------------------------------------------------------------------------
-
-SSH - not correct
-
-VM1: ip a
-VM2: ip a
-
-VM2:
-sudo apt update
-sudo apt install -y openssh-server
-sudo systemctl enable --now ssh
-sudo systemctl status ssh  
-
-sudo ufw allow OpenSSH
-sudo ufw status
-
-
-VM1(use IP of vm2):
-
-sudo tee -a /etc/ssh/ssh_config > /dev/null <<'EOF'
-Host 192.168.56.104
-  HostKeyAlgorithms +ssh-rsa
-  PubkeyAcceptedAlgorithms +ssh-rsa
-EOF
-
-echo "Sample file" > /home/ubuntu/file.txt
-ls -l /home/ubuntu/file.txt
-cat /home/ubuntu/file.txt
-
-ping -c 4 <VM2-IP>
-
-scp /home/ubuntu/file.txt ubuntu@<VM2-IP>:/home/ubuntu/
-ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa ubuntu@<VM2_IP>
-
-
-VM2:
-ls -l /home/ubuntu/file.txt
-cat /home/ubuntu/file.txt
-
-op should be "Sample file"
 
 --------------------------------------------------------------------------------------------------
-
-
-
-
 
 
 WORKINGGGGG
@@ -517,11 +420,15 @@ WORKINGGGGG
 sudo ufw disable
 python3 -m http.server 8080
 
+--------------------------------------------------------------------------------------------------
+
 #shared folder
 sudo apt install build-essential dkms linux-headers-$(uname -r)
 sudo usermod -aG vboxsf $USER
 sudo reboot
 ls /media/sf_SharedFolder
+
+--------------------------------------------------------------------------------------------------
 
 #ftp
 sudo apt install vsftpd
@@ -551,7 +458,10 @@ login to ftpuser & create file in "uploads" directory
 vm2: ftp <ip> in other vm
 vm2: create another file & upload it to ftpserver
 
-#nfs
+--------------------------------------------------------------------------------------------------
+
+#NFS
+
 sudo ufw disable
 server vm: sudo apt install nfs-kernel-server
 client vm: sudo apt install nfs-common
@@ -569,6 +479,8 @@ sudo mkdir -p /mnt/nfsshare
 sudo mount <server ip>:/mnt/sharedfolder /mnt/nfsshare
 
 create files in /mnt/nfsshare and check it in server vm
+
+--------------------------------------------------------------------------------------------------
 
 #ssh
 both vm:
