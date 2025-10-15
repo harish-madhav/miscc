@@ -3,6 +3,9 @@ VM-VM ping
 2) ip addr show
 3) ping
 
+sudo rm /var/lib/dpkg/lock-frontend
+    sudo dpkg --configure -a
+
 --------------------------------------------------------------------------------------------------
 
 VM-Host ping
@@ -490,3 +493,4 @@ sudo ufw disable
 ssh <username>@<ip>
 
 create file in vm2 & check it in vm1
+
